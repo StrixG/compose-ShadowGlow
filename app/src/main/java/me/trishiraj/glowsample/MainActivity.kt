@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.trishiraj.composeglow.dropShadow
@@ -97,13 +96,12 @@ fun DropShadowDemoScreen(modifier: Modifier = Modifier) {
                     gradientStartFactorY = 0f,
                     gradientEndFactorX = 1f,
                     gradientEndFactorY = 1f,
-                    gradientTileMode = TileMode.Clamp,
                     borderRadius = 12.dp,
                     blurRadius = 12.dp,
                     offsetX = 0.dp,
                     offsetY = 0.dp,
                     spread = 2.dp,
-                    alpha = 1.0f
+                    alpha = 1f
                 )
                 .background(Color.White)
                 .padding(16.dp)
