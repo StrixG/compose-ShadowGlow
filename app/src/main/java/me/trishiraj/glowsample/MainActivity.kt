@@ -7,10 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import me.trishiraj.composeglow.ShadowBlurStyle
 import me.trishiraj.composeglow.dropShadow
 import me.trishiraj.glowsample.ui.theme.GlowSampleTheme
 
@@ -41,54 +42,50 @@ fun DropShadowDemoScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(42.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Default Drop Shadow",
+            text = "Default Drop Shadow (Normal Blur)",
             modifier = Modifier
                 .dropShadow()
                 .background(Color.White)
                 .padding(16.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
-
         Text(
-            text = "Colored Offset Shadow",
+            text = "Colored Offset Shadow (Solid Blur)",
             modifier = Modifier
                 .dropShadow(
-                    color = Color.Magenta.copy(alpha = 0.5f),
+                    color = Color.Magenta.copy(alpha = 0.7f),
                     offsetX = 8.dp,
                     offsetY = 8.dp,
-                    blurRadius = 4.dp
+                    blurRadius = 8.dp,
+                    blurStyle = ShadowBlurStyle.SOLID
                 )
                 .background(Color.White)
                 .padding(16.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
-
         Text(
-            text = "Spread Shadow with Rounded Corners",
+            text = "Spread Shadow (Inner Blur)",
             modifier = Modifier
                 .dropShadow(
                     color = Color.Cyan.copy(alpha = 0.7f),
                     borderRadius = 12.dp,
-                    blurRadius = 16.dp, 
+                    blurRadius = 16.dp,
                     offsetX = 0.dp,
                     offsetY = 0.dp,
-                    spread = 6.dp
+                    spread = 6.dp,
+                    blurStyle = ShadowBlurStyle.INNER
                 )
-                .background(Color.White)
                 .padding(16.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
-
         Text(
-            text = "Gradient Drop Shadow",
+            text = "Gradient Drop Shadow (Inner Blur)",
             modifier = Modifier
                 .dropShadow(
                     gradientColors = listOf(Color.Red.copy(alpha = 0.7f), Color.Blue.copy(alpha = 0.7f)),
@@ -97,13 +94,13 @@ fun DropShadowDemoScreen(modifier: Modifier = Modifier) {
                     gradientEndFactorX = 1f,
                     gradientEndFactorY = 1f,
                     borderRadius = 12.dp,
-                    blurRadius = 12.dp,
+                    blurRadius = 16.dp,
                     offsetX = 0.dp,
                     offsetY = 0.dp,
                     spread = 2.dp,
-                    alpha = 1f
+                    alpha = 1f,
+                    blurStyle = ShadowBlurStyle.OUTER
                 )
-                .background(Color.White)
                 .padding(16.dp)
         )
     }
