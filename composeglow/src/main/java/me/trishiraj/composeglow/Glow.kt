@@ -189,7 +189,7 @@ private fun rememberGyroParallaxState(sensitivity: Dp): State<Pair<Float, Float>
     val sensitivityPx = remember(sensitivity) { with(density) { sensitivity.toPx() } }
 
     val parallaxOffset = remember { mutableStateOf(0f to 0f) }
-    val baselineOrientation = remember { mutableStateOf<FloatArray?>(null) } // Stores baseline [pitch, roll]
+    val baselineOrientation = remember { mutableStateOf<FloatArray?>(null) }
 
     DisposableEffect(context, sensitivityPx) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -199,7 +199,7 @@ private fun rememberGyroParallaxState(sensitivity: Dp): State<Pair<Float, Float>
         if (rotationSensor != null) {
             sensorEventListener = object : SensorEventListener {
                 private val rotationMatrix = FloatArray(9)
-                private val currentOrientationAngles = FloatArray(3) // For current pitch, roll, azimuth
+                private val currentOrientationAngles = FloatArray(3)
 
                 override fun onSensorChanged(event: SensorEvent?) {
                     if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
@@ -237,8 +237,8 @@ private fun rememberGyroParallaxState(sensitivity: Dp): State<Pair<Float, Float>
             sensorEventListener?.let {
                 sensorManager.unregisterListener(it)
             }
-            parallaxOffset.value = 0f to 0f // Reset offset
-            baselineOrientation.value = null // Reset baseline
+            parallaxOffset.value = 0f to 0f
+            baselineOrientation.value = null
             object : DisposableEffectResult {
                 override fun dispose() {}
             }
