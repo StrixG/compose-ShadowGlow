@@ -6,14 +6,13 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/me.trishiraj.shadowglow/shadowglow.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:me.trishiraj.shadowglow%20a:shadowglow)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-<!-- Add other badges if you like, e.g., build status, issues -->
 
-ShadowGlow is a highly customizable Jetpack Compose library designed to elevate your UI by providing a versatile and easy-to-use `Modifier.dropShadow()` extension. Create stunning depth, glow, and dynamic visual effects with features like gyroscope-driven parallax and subtle breathing animations.
+ShadowGlow is a highly customizable Jetpack Compose library designed to elevate your UI by providing a versatile and easy-to-use `Modifier.shadowGlow()` extension. Create stunning depth, glow, and dynamic visual effects with features like gyroscope-driven parallax and subtle breathing animations.
 
 <!-- Video Demo Placeholder -->
 <!--
 **Watch a Demo!**
-[Link to your YouTube video or GIF showcasing ShadowGlow in action]
+[Link to your YouTube video or GIF showcasing shadowGlow in action]
 (https://www.youtube.com/watch?v=your_video_id_here)
 -->
 
@@ -47,45 +46,43 @@ ShadowGlow is available on Maven Central. Add the dependency to your `build.grad
 
 **Kotlin DSL (`build.gradle.kts`):**
 
-'''kotlin
+```kotlin
 dependencies {
-    implementation("me.trishiraj.shadowglow:shadowglow:1.0.0") // Replace 1.0.0 with the latest version
+    implementation("me.trishiraj:shadowglow:1.0.0")
 }
-'''
+```
 
 **Groovy DSL (`build.gradle`):**
 
-'''groovy
+```groovy
 dependencies {
-    implementation 'me.trishiraj.shadowglow:shadowglow:1.0.0' // Replace 1.0.0 with the latest version
+    implementation 'me.trishiraj:shadowglow:1.0.0'
 }
-'''
-
-*(Remember to replace `1.0.0` with the actual latest version number once published.)*
+```
 
 ---
 
 ## 🚀 Usage Guide
 
-Applying a shadow is as simple as using the `Modifier.dropShadow()` extension.
+Applying a shadow is as simple as using the `Modifier.shadowGlow()` extension.
 
 ### Basic Solid Color Shadow
 
-'''kotlin
+```kotlin
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import me.trishiraj.composeglow.dropShadow // Import the extension
+import me.trishiraj.shadowGlow // Import the extension
 
 // ...
 
 Text(
     text = "Solid Shadow",
     modifier = Modifier
-        .dropShadow(
+        .shadowGlow(
             color = Color.Black.copy(alpha = 0.5f),
             borderRadius = 8.dp,
             blurRadius = 10.dp,
@@ -95,18 +92,19 @@ Text(
         .background(Color.White) // Apply background to the composable itself
         .padding(16.dp)
 )
-'''
+```
 
 ### Basic Gradient Shadow
 
-'''kotlin
-import me.trishiraj.composeglow.dropShadow // Import the extension
+```kotlin
+import me.trishiraj.shadowGlow
+// Import the extension
 // ... other necessary imports
 
 Text(
     text = "Gradient Shadow",
     modifier = Modifier
-        .dropShadow(
+        .shadowGlow(
             gradientColors = listOf(Color.Magenta.copy(alpha = 0.6f), Color.Blue.copy(alpha = 0.6f)),
             borderRadius = 12.dp,
             blurRadius = 16.dp,
@@ -115,7 +113,7 @@ Text(
         .background(Color.White)
         .padding(16.dp)
 )
-'''
+```
 
 ---
 
@@ -158,16 +156,15 @@ ShadowGlow offers a rich set of parameters to tailor your shadows:
 
 ### Example: Fully Featured Shadow
 
-'''kotlin
-import me.trishiraj.composeglow.dropShadow
-import me.trishiraj.composeglow.ShadowBlurStyle
-
+```kotlin
+import me.trishiraj.shadowGlow
+import me.trishiraj.shadowGlow.ShadowBlurStyle
 // ... other necessary imports
 
 Text(
     text = "Feature-Rich Shadow",
     modifier = Modifier
-        .dropShadow(
+        .shadowGlow(
             color = Color.Green.copy(alpha = 0.7f),
             borderRadius = 20.dp,
             blurRadius = 12.dp,
@@ -184,18 +181,19 @@ Text(
         .background(Color.DarkGray)
         .padding(24.dp)
 )
-'''
+```
 
 ---
 
 ## 📚 API Reference
 
-The primary API is the `Modifier.dropShadow()` extension function. It has two overloads:
+The primary API is the `Modifier.shadowGlow()` extension function. It has two overloads:
 
-1.  `dropShadow(color: Color, ...)`: For solid color shadows.
-2.  `dropShadow(gradientColors: List<Color>, ...)`: For gradient shadows.
+1.  `shadowGlow(color: Color, ...)`: For solid color shadows.
+2.  `shadowGlow(gradientColors: List<Color>, ...)`: For gradient shadows.
 
 Refer to the "Customization Deep Dive" section above for details on all available parameters and their default values. For more in-depth information, please refer to the KDoc comments within the source code.
+Or simply refer to the sample app given within `app > src > ...MainActivity.kt`
 
 ---
 
@@ -213,4 +211,4 @@ Contributions are welcome! Whether it's bug reports, feature requests, or pull r
 
 ## 📜 License
 
-ShadowGlow is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
+ShadowGlow is licensed under the Apache License, Version 2.0. See the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0.txt) file for details.
