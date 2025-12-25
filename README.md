@@ -6,7 +6,7 @@
 [![Maven Central Version](https://img.shields.io/maven-central/v/me.trishiraj/shadowglow)](https://central.sonatype.com/artifact/me.trishiraj/shadowglow)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-ShadowGlow is a highly customizable Jetpack Compose library designed to elevate your UI by providing a versatile and easy-to-use `Modifier.shadowGlow()` extension. Create stunning depth, glow, and dynamic visual effects with features like gyroscope-driven parallax and subtle breathing animations.
+ShadowGlow is a highly customizable Jetpack Compose library designed to elevate your UI by providing a versatile and easy-to-use `Modifier.shadowGlow()` extension. Create stunning depth, glow, and dynamic visual effects with features like gyroscope-driven parallax, subtle breathing animations, and animated glow trails.
 
 <!-- Video Demo Placeholder -->
 **Watch a Demo!**
@@ -21,6 +21,7 @@ ShadowGlow is a highly customizable Jetpack Compose library designed to elevate 
 *   **🎭 Multiple Blur Styles:** Choose from `NORMAL`, `SOLID`, `OUTER`, and `INNER` blur styles, corresponding to Android's `BlurMaskFilter.Blur`.
 *   **🌌 Gyroscope Parallax Effect:** Add a dynamic depth effect where the shadow subtly shifts based on device orientation.
 *   **🌬️ Breathing Animation Effect:** Create an engaging pulsating effect by animating the shadow's blur radius.
+*   **💫 Animated Glow Trail:** Add a configurable, animated trail that flows around the shape's border.
 *   **🚀 Easy to Use:** Apply complex shadows with a simple and fluent Modifier chain.
 *   **💻 Compose Multiplatform Ready (Core Logic):** Designed with multiplatform principles in mind (platform-specific implementations for features like gyro would be needed).
 *   **📱 Theme Friendly:** Works seamlessly with light and dark themes.
@@ -30,7 +31,7 @@ ShadowGlow is a highly customizable Jetpack Compose library designed to elevate 
 ## 🌟 Why Choose ShadowGlow?
 
 *   **Unparalleled Customization:** Fine-tune every aspect of your shadow to perfectly match your app's design language.
-*   **Dynamic & Interactive:** Go beyond static shadows with unique parallax and breathing effects that respond to the user and device.
+*   **Dynamic & Interactive:** Go beyond static shadows with unique parallax, breathing, and glow trail effects.
 *   **Simplified API:** Achieve complex effects with an intuitive and developer-friendly API.
 *   **Lightweight & Performant:** Built with performance considerations for smooth UI rendering.
 
@@ -44,7 +45,7 @@ ShadowGlow is available on Maven Central. Add the dependency to your `build.grad
 
 ```kotlin
 dependencies {
-    implementation("me.trishiraj:shadowglow:1.0.0")
+    implementation("me.trishiraj:shadowglow:2.0.0") 
 }
 ```
 
@@ -52,7 +53,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'me.trishiraj:shadowglow:1.0.0'
+    implementation 'me.trishiraj:shadowglow:2.0.0'
 }
 ```
 
@@ -135,6 +136,18 @@ ShadowGlow offers a rich set of parameters to tailor your shadows:
 *   `breathingEffectIntensity: Dp = 4.dp`: The maximum *additional* blur radius applied during one cycle of the breathing animation. The blur will animate between `blurRadius` and `blurRadius + breathingEffectIntensity`.
 *   `breathingDurationMillis: Int = 1500`: The duration (in milliseconds) for one full cycle of the breathing animation (e.g., expand and contract).
 
+### Glow Trail Effect
+
+These parameters control the animated trail that can be drawn around the shape's border.
+
+*   `enableGlowTrail: Boolean = false`: Set to `true` to enable the animated glow trail.
+*   `glowTrailWidth: Dp = 8.dp`: The stroke width of the trail.
+*   `glowTrailBlurRadius: Dp = 16.dp`: The blur radius applied to the trail itself.
+*   `glowTrailLengthDegrees: Float = 60f`: The length of the trail segment, expressed in degrees (out of 360).
+*   `glowTrailDurationMillis: Int = 2500`: The time it takes for the trail to complete one full loop around the shape.
+*   `glowTrailClockwise: Boolean = true`: The direction of the trail animation.
+*   `glowTrailAlpha: Float = 1f`: The alpha transparency of the trail.
+
 ### Solid Color Shadow Specific
 
 *   `color: Color = Color.Black.copy(alpha = 0.4f)`: The solid color of the shadow.
@@ -147,8 +160,8 @@ ShadowGlow offers a rich set of parameters to tailor your shadows:
 *   `gradientEndFactorX: Float = 1f`: The X-coordinate end factor for the gradient.
 *   `gradientEndFactorY: Float = 1f`: The Y-coordinate end factor for the gradient.
 *   `gradientColorStops: List<Float>? = null`: Optional list of relative positions (0.0 to 1.0) for each color in `gradientColors`. If null, colors are distributed evenly.
-*   `gradientTileMode: TileMode = TileMode.Clamp`: How the gradient should be tiled if it doesn't fill the bounds (`Clamp`, `Repeated`, `Mirror`).
 *   `alpha: Float = 1.0f`: Overall alpha transparency for the gradient shadow (0.0f to 1.0f).
+
 
 ### Example: Fully Featured Shadow
 
@@ -172,7 +185,14 @@ Text(
             parallaxSensitivity = 6.dp,
             enableBreathingEffect = true,
             breathingEffectIntensity = 5.dp,
-            breathingDurationMillis = 2000
+            breathingDurationMillis = 2000,
+            enableGlowTrail = true,
+            glowTrailWidth = 10.dp,
+            glowTrailBlurRadius = 20.dp,
+            glowTrailLengthDegrees = 90f,
+            glowTrailDurationMillis = 2000,
+            glowTrailClockwise = false,
+            glowTrailAlpha = 0.8f
         )
         .background(Color.DarkGray)
         .padding(24.dp)
