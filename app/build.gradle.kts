@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":shadowglow"))
     implementation(libs.shadowglow)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

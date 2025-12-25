@@ -2,6 +2,8 @@ package me.trishiraj.shadowglow
 
 import android.content.Context
 import android.graphics.BlurMaskFilter
+import android.graphics.Path
+import android.graphics.PathMeasure
 import android.graphics.LinearGradient as AndroidLinearGradient
 import android.graphics.Paint as AndroidPaint
 import android.hardware.Sensor
@@ -9,12 +11,16 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -68,6 +74,99 @@ private fun rememberAnimatedBreathingValue(
     )
 }
 
+@Composable
+private fun rememberGlowTrailProgess(
+    enabled: Boolean,
+    clockwise: Boolean,
+    durationMillis: Int
+): State<Float> {
+    if (!enabled || durationMillis <= 0) {
+        return remember { mutableFloatStateOf(0f) }
+    }
+    val transition = rememberInfiniteTransition(label = "glowTrail")
+    return transition.animateFloat(
+        initialValue = if (clockwise) 0f else 1f,
+        targetValue = if (clockwise) 1f else 0f,
+        animationSpec = infiniteRepeatable(
+            tween(durationMillis, easing = LinearEasing),
+            RepeatMode.Restart
+        ),
+        label = "glowTrailAnim"
+    )
+}
+
+private fun Outline.toAndroidPath(): Path =
+    when (this) {
+        is Outline.Rectangle -> Path().apply {
+            addRect(rect.left, rect.top, rect.right, rect.bottom, Path.Direction.CW)
+        }
+
+        is Outline.Rounded -> Path().apply {
+            addRoundRect(
+                roundRect.left,
+                roundRect.top,
+                roundRect.right,
+                roundRect.bottom,
+                floatArrayOf(
+                    roundRect.topLeftCornerRadius.x, roundRect.topLeftCornerRadius.y,
+                    roundRect.topRightCornerRadius.x, roundRect.topRightCornerRadius.y,
+                    roundRect.bottomRightCornerRadius.x, roundRect.bottomRightCornerRadius.y,
+                    roundRect.bottomLeftCornerRadius.x, roundRect.bottomLeftCornerRadius.y
+                ),
+                Path.Direction.CW,
+            )
+        }
+
+        is Outline.Generic -> Path(path.asAndroidPath())
+    }
+
+private fun DrawScope.drawGlowTrailAlongShape(
+    shape: Shape,
+    progress: Float,
+    trailFraction: Float,
+    color: Color,
+    strokeWidthPx: Float,
+    blurRadiusPx: Float,
+    alpha: Float
+) {
+    if (strokeWidthPx <= 0f || alpha <= 0f) return
+    val outline = shape.createOutline(size, layoutDirection, this)
+    val fullPath = outline.toAndroidPath()
+
+    val measure = PathMeasure(fullPath, false)
+    val length = measure.length
+    if (length <= 0f) return
+
+    val segmentLength = length * trailFraction.coerceIn(0.01f, 1f)
+    val start = (progress * length) % length
+    val end = (start + segmentLength)
+
+    val segmentPath = Path()
+
+    if (end <= length) {
+        measure.getSegment(start, end, segmentPath, true)
+    } else {
+        measure.getSegment(start, length, segmentPath, true)
+        measure.getSegment(0f, end - length, segmentPath, true)
+    }
+
+    val paint = AndroidPaint().apply {
+        isAntiAlias = true
+        style = AndroidPaint.Style.STROKE
+        strokeWidth = strokeWidthPx
+        strokeCap = AndroidPaint.Cap.ROUND
+        strokeJoin = AndroidPaint.Join.ROUND
+        this.color = color.copy(alpha = alpha).toArgb()
+        if (blurRadiusPx > 0f) {
+            maskFilter = BlurMaskFilter(blurRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+
+    drawIntoCanvas {
+        it.nativeCanvas.drawPath(segmentPath, paint)
+    }
+}
+
 /**
  * Applies a drop shadow effect to the composable using a solid color.
  *
@@ -97,9 +196,24 @@ fun Modifier.shadowGlow(
     parallaxSensitivity: Dp = 4.dp,
     enableBreathingEffect: Boolean = false,
     breathingEffectIntensity: Dp = 4.dp,
-    breathingDurationMillis: Int = 1500
+    breathingDurationMillis: Int = 1500,
+    enableGlowTrail: Boolean = false,
+    glowTrailWidth: Dp = 8.dp,
+    glowTrailBlurRadius: Dp = 16.dp,
+    glowTrailLengthDegrees: Float = 60f,
+    glowTrailDurationMillis: Int = 2500,
+    glowTrailClockwise: Boolean = true,
+    glowTrailAlpha: Float = 1f
 ): Modifier = composed {
+
+    val glowTrailProgress = rememberGlowTrailProgess(
+        enableGlowTrail,
+        glowTrailClockwise,
+        glowTrailDurationMillis
+    )
+
     val parallaxState = if (enableGyroParallax) rememberGyroParallaxState(parallaxSensitivity) else null
+
     val animatedBreathingValuePx = rememberAnimatedBreathingValue(
         enabled = enableBreathingEffect,
         intensity = breathingEffectIntensity,
@@ -109,9 +223,9 @@ fun Modifier.shadowGlow(
     this.then(
         Modifier.drawBehind {
             val spreadPx = spread.toPx()
-            val baseBlurRadiusPx = blurRadius.toPx()
+            val totalBlurPx = blurRadius.toPx() + animatedBreathingValuePx.value
             val currentAnimatedBlurPx = animatedBreathingValuePx.value
-            val totalBlurRadiusPx = (baseBlurRadiusPx + currentAnimatedBlurPx).coerceAtLeast(0f)
+            val totalBlurRadiusPx = (totalBlurPx + currentAnimatedBlurPx).coerceAtLeast(0f)
 
             val baseOffsetXPx = offsetX.toPx()
             val baseOffsetYPx = offsetY.toPx()
@@ -125,6 +239,11 @@ fun Modifier.shadowGlow(
 
             val shadowColorArgb = color.toArgb()
 
+            val left = -spreadPx + totalOffsetXPx
+            val top = -spreadPx + totalOffsetYPx
+            val right = size.width + spreadPx + totalOffsetXPx
+            val bottom = size.height + spreadPx + totalOffsetYPx
+
             if (color.alpha == 0f && totalBlurRadiusPx <= 0f && spreadPx == 0f && dynamicOffsetXPx == 0f && dynamicOffsetYPx == 0f && baseOffsetXPx == 0f && baseOffsetYPx == 0f) {
                 return@drawBehind
             }
@@ -137,12 +256,20 @@ fun Modifier.shadowGlow(
                     maskFilter = BlurMaskFilter(totalBlurRadiusPx, blurStyle.toAndroidBlurStyle())
                 }
             }
-            val left = -spreadPx + totalOffsetXPx
-            val top = -spreadPx + totalOffsetYPx
-            val right = size.width + spreadPx + totalOffsetXPx
-            val bottom = size.height + spreadPx + totalOffsetYPx
 
             drawShadowShape(left, top, right, bottom, shadowBorderRadiusPx, frameworkPaint)
+
+            if (enableGlowTrail) {
+                drawGlowTrailAlongShape(
+                    shape = RoundedCornerShape(borderRadius),
+                    progress = glowTrailProgress.value,
+                    trailFraction = glowTrailLengthDegrees / 360f,
+                    color = color,
+                    strokeWidthPx = glowTrailWidth.toPx(),
+                    blurRadiusPx = glowTrailBlurRadius.toPx(),
+                    alpha = glowTrailAlpha
+                )
+            }
         }
     )
 }
@@ -169,13 +296,27 @@ fun Modifier.shadowGlow(
     parallaxSensitivity: Dp = 4.dp,
     enableBreathingEffect: Boolean = false,
     breathingEffectIntensity: Dp = 4.dp,
-    breathingDurationMillis: Int = 1500
+    breathingDurationMillis: Int = 1500,
+    enableGlowTrail: Boolean = false,
+    glowTrailWidth: Dp = 8.dp,
+    glowTrailBlurRadius: Dp = 16.dp,
+    glowTrailLengthDegrees: Float = 60f,
+    glowTrailDurationMillis: Int = 2500,
+    glowTrailClockwise: Boolean = true,
+    glowTrailAlpha: Float = 1f
 ): Modifier = composed {
-    val parallaxState = if (enableGyroParallax) rememberGyroParallaxState(parallaxSensitivity) else null
+    val parallaxState =
+        if (enableGyroParallax) rememberGyroParallaxState(parallaxSensitivity) else null
     val animatedBreathingValuePx = rememberAnimatedBreathingValue(
         enabled = enableBreathingEffect,
         intensity = breathingEffectIntensity,
         durationMillis = breathingDurationMillis
+    )
+
+    val glowTrailProgress = rememberGlowTrailProgess(
+        enableGlowTrail,
+        glowTrailClockwise,
+        glowTrailDurationMillis
     )
 
     this.then(
@@ -187,7 +328,7 @@ fun Modifier.shadowGlow(
             val baseBlurRadiusPx = blurRadius.toPx()
             val currentAnimatedBlurPx = animatedBreathingValuePx.value
             val totalBlurRadiusPx = (baseBlurRadiusPx + currentAnimatedBlurPx).coerceAtLeast(0f)
-            
+
             val baseOffsetXPx = offsetX.toPx()
             val baseOffsetYPx = offsetY.toPx()
             val shadowBorderRadiusPx = borderRadius.toPx()
@@ -203,6 +344,11 @@ fun Modifier.shadowGlow(
             val actualEndX = gradientEndFactorX * size.width
             val actualEndY = gradientEndFactorY * size.height
 
+            val left = -spreadPx + totalOffsetXPx
+            val top = -spreadPx + totalOffsetYPx
+            val right = size.width + spreadPx + totalOffsetXPx
+            val bottom = size.height + spreadPx + totalOffsetYPx
+
             val frameworkPaint = AndroidPaint().apply {
                 isAntiAlias = true
                 style = AndroidPaint.Style.FILL
@@ -217,12 +363,20 @@ fun Modifier.shadowGlow(
                     maskFilter = BlurMaskFilter(totalBlurRadiusPx, blurStyle.toAndroidBlurStyle())
                 }
             }
-            val left = -spreadPx + totalOffsetXPx
-            val top = -spreadPx + totalOffsetYPx
-            val right = size.width + spreadPx + totalOffsetXPx
-            val bottom = size.height + spreadPx + totalOffsetYPx
 
             drawShadowShape(left, top, right, bottom, shadowBorderRadiusPx, frameworkPaint)
+
+            if (enableGlowTrail) {
+                drawGlowTrailAlongShape(
+                    shape = RoundedCornerShape(borderRadius),
+                    progress = glowTrailProgress.value,
+                    trailFraction = glowTrailLengthDegrees / 360f,
+                    color = gradientColors.first(),
+                    strokeWidthPx = glowTrailWidth.toPx(),
+                    blurRadiusPx = glowTrailBlurRadius.toPx(),
+                    alpha = glowTrailAlpha
+                )
+            }
         }
     )
 }
@@ -269,9 +423,14 @@ private fun rememberGyroParallaxState(sensitivity: Dp): State<Pair<Float, Float>
                         }
                     }
                 }
+
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
-            sensorManager.registerListener(sensorEventListener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(
+                sensorEventListener,
+                rotationSensor,
+                SensorManager.SENSOR_DELAY_UI
+            )
         } else {
             baselineOrientation.value = null
         }
@@ -290,8 +449,23 @@ private fun rememberGyroParallaxState(sensitivity: Dp): State<Pair<Float, Float>
     return parallaxOffset
 }
 
-private fun DrawScope.drawShadowShape(left: Float, top: Float, right: Float, bottom: Float, cornerRadiusPx: Float, paint: AndroidPaint) {
+private fun DrawScope.drawShadowShape(
+    left: Float,
+    top: Float,
+    right: Float,
+    bottom: Float,
+    cornerRadiusPx: Float,
+    paint: AndroidPaint
+) {
     drawIntoCanvas { canvas ->
-        canvas.nativeCanvas.drawRoundRect(left, top, right, bottom, cornerRadiusPx, cornerRadiusPx, paint)
+        canvas.nativeCanvas.drawRoundRect(
+            left,
+            top,
+            right,
+            bottom,
+            cornerRadiusPx,
+            cornerRadiusPx,
+            paint
+        )
     }
 }

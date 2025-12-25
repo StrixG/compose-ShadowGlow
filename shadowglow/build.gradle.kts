@@ -33,7 +33,7 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates(groupId = "me.trishiraj", artifactId = "shadowglow", version = "1.0.0")
+    coordinates(groupId = "me.trishiraj", artifactId = "shadowglow", version = "2.0.0")
 
     pom {
         name = "ShadowGlow"

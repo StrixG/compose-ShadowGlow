@@ -41,7 +41,8 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
     val isInDarkMode = isSystemInDarkTheme()
 
     var isGradientMode by remember { mutableStateOf(false) }
-    val defaultSolidColor = if (isInDarkMode) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.4f)
+    val defaultSolidColor =
+        if (isInDarkMode) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.4f)
     var shadowColor by remember { mutableStateOf(defaultSolidColor) }
     val gradientColors = listOf(Color.Red.copy(alpha = 0.7f), Color.Blue.copy(alpha = 0.7f))
     var gradientAlpha by remember { mutableFloatStateOf(1.0f) }
@@ -59,6 +60,14 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
     var enableBreathingEffect by remember { mutableStateOf(false) }
     var breathingIntensity by remember { mutableFloatStateOf(4f) }
     var breathingDuration by remember { mutableFloatStateOf(1500f) }
+
+    var enableGlowTrail by remember { mutableStateOf(true) }
+    var glowTrailWidth by remember { mutableFloatStateOf(10f) }
+    var glowTrailBlur by remember { mutableFloatStateOf(20f) }
+    var glowTrailLength by remember { mutableFloatStateOf(80f) }
+    var glowTrailDuration by remember { mutableFloatStateOf(2800f) }
+    var glowTrailClockwise by remember { mutableStateOf(true) }
+    var glowTrailAlpha by remember { mutableFloatStateOf(1f) }
 
     Column(
         modifier = modifier
@@ -82,7 +91,14 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
                 parallaxSensitivity = parallaxSensitivity.dp,
                 enableBreathingEffect = enableBreathingEffect,
                 breathingEffectIntensity = breathingIntensity.dp,
-                breathingDurationMillis = breathingDuration.toInt()
+                breathingDurationMillis = breathingDuration.toInt(),
+                enableGlowTrail = enableGlowTrail,
+                glowTrailWidth = glowTrailWidth.dp,
+                glowTrailBlurRadius = glowTrailBlur.dp,
+                glowTrailLengthDegrees = glowTrailLength,
+                glowTrailDurationMillis = glowTrailDuration.toInt(),
+                glowTrailClockwise = glowTrailClockwise,
+                glowTrailAlpha = glowTrailAlpha
             )
         } else {
             Modifier.shadowGlow(
@@ -97,7 +113,14 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
                 parallaxSensitivity = parallaxSensitivity.dp,
                 enableBreathingEffect = enableBreathingEffect,
                 breathingEffectIntensity = breathingIntensity.dp,
-                breathingDurationMillis = breathingDuration.toInt()
+                breathingDurationMillis = breathingDuration.toInt(),
+                enableGlowTrail = enableGlowTrail,
+                glowTrailWidth = glowTrailWidth.dp,
+                glowTrailBlurRadius = glowTrailBlur.dp,
+                glowTrailLengthDegrees = glowTrailLength,
+                glowTrailDurationMillis = glowTrailDuration.toInt(),
+                glowTrailClockwise = glowTrailClockwise,
+                glowTrailAlpha = glowTrailAlpha
             )
         }
 
@@ -121,12 +144,21 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
                     text = if (isGradientMode) "Mode: Gradient" else "Mode: Solid Color",
                     fontSize = 12.sp
                 )
-                Text("Base Blur: ${blurRadius.roundToInt()}dp, Style: $shadowBlurStyle", fontSize = 12.sp)
+                Text(
+                    "Base Blur: ${blurRadius.roundToInt()}dp, Style: $shadowBlurStyle",
+                    fontSize = 12.sp
+                )
                 if (enableGyroParallax) {
-                    Text("Gyro Parallax: Enabled (${parallaxSensitivity.roundToInt()}dp)", fontSize = 12.sp)
+                    Text(
+                        "Gyro Parallax: Enabled (${parallaxSensitivity.roundToInt()}dp)",
+                        fontSize = 12.sp
+                    )
                 }
                 if (enableBreathingEffect) {
-                    Text("Breathing Effect: Enabled (Intensity: ${breathingIntensity.roundToInt()}dp, Duration: ${breathingDuration.toInt()}ms)", fontSize = 12.sp)
+                    Text(
+                        "Breathing Effect: Enabled (Intensity: ${breathingIntensity.roundToInt()}dp, Duration: ${breathingDuration.toInt()}ms)",
+                        fontSize = 12.sp
+                    )
                 }
             }
         }
@@ -135,30 +167,129 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
         Text("Configuration", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(16.dp))
 
-        Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ControlRow("Gradient Mode:", checkbox = true, checked = isGradientMode, onCheckedChange = { isGradientMode = it })
-            ControlRow("Gyro Parallax:", checkbox = true, checked = enableGyroParallax, onCheckedChange = { enableGyroParallax = it })
-            ControlRow("Breathing Effect:", checkbox = true, checked = enableBreathingEffect, onCheckedChange = { enableBreathingEffect = it })
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ControlRow(
+                "Gradient Mode:",
+                checkbox = true,
+                checked = isGradientMode,
+                onCheckedChange = { isGradientMode = it })
+            ControlRow(
+                "Gyro Parallax:",
+                checkbox = true,
+                checked = enableGyroParallax,
+                onCheckedChange = { enableGyroParallax = it })
+            ControlRow(
+                "Breathing Effect:",
+                checkbox = true,
+                checked = enableBreathingEffect,
+                onCheckedChange = { enableBreathingEffect = it })
+            ControlRow(
+                "Enable Glow Trail",
+                checkbox = true,
+                checked = enableGlowTrail,
+                onCheckedChange = { enableGlowTrail = it })
 
-            SliderControl("Border Radius: ${borderRadius.roundToInt()}dp", borderRadius, 0f, 50f) { borderRadius = it }
-            SliderControl("Base Blur Radius: ${blurRadius.roundToInt()}dp", blurRadius, 0f, 50f) { blurRadius = it }
-            SliderControl("Offset X: ${offsetX.roundToInt()}dp", offsetX, -50f, 50f) { offsetX = it }
-            SliderControl("Offset Y: ${offsetY.roundToInt()}dp", offsetY, -50f, 50f) { offsetY = it }
+            SliderControl(
+                "Border Radius: ${borderRadius.roundToInt()}dp",
+                borderRadius,
+                0f,
+                50f
+            ) { borderRadius = it }
+            SliderControl(
+                "Base Blur Radius: ${blurRadius.roundToInt()}dp",
+                blurRadius,
+                0f,
+                50f
+            ) { blurRadius = it }
+            SliderControl("Offset X: ${offsetX.roundToInt()}dp", offsetX, -50f, 50f) {
+                offsetX = it
+            }
+            SliderControl("Offset Y: ${offsetY.roundToInt()}dp", offsetY, -50f, 50f) {
+                offsetY = it
+            }
             SliderControl("Spread: ${spread.roundToInt()}dp", spread, 0f, 30f) { spread = it }
-            
+
             if (isGradientMode) {
-                SliderControl("Gradient Alpha: ${"%.2f".format(gradientAlpha)}", gradientAlpha, 0f, 1f) { gradientAlpha = it }
+                SliderControl(
+                    "Gradient Alpha: ${"%.2f".format(gradientAlpha)}",
+                    gradientAlpha,
+                    0f,
+                    1f
+                ) { gradientAlpha = it }
             }
             if (enableGyroParallax) {
-                SliderControl("Parallax Sensitivity: ${parallaxSensitivity.roundToInt()}dp", parallaxSensitivity, 0f, 20f) { parallaxSensitivity = it }
+                SliderControl(
+                    "Parallax Sensitivity: ${parallaxSensitivity.roundToInt()}dp",
+                    parallaxSensitivity,
+                    0f,
+                    20f
+                ) { parallaxSensitivity = it }
             }
             if (enableBreathingEffect) {
-                SliderControl("Breathing Intensity: ${breathingIntensity.roundToInt()}dp", breathingIntensity, 0f, 20f) { breathingIntensity = it }
-                SliderControl("Breathing Duration: ${breathingDuration.toInt()}ms", breathingDuration, 500f, 5000f) { breathingDuration = it }
+                SliderControl(
+                    "Breathing Intensity: ${breathingIntensity.roundToInt()}dp",
+                    breathingIntensity,
+                    0f,
+                    20f
+                ) { breathingIntensity = it }
+                SliderControl(
+                    "Breathing Duration: ${breathingDuration.toInt()}ms",
+                    breathingDuration,
+                    500f,
+                    5000f
+                ) { breathingDuration = it }
+            }
+            if (enableGlowTrail) {
+                ControlRow(
+                    "clockwise",
+                    checkbox = true,
+                    checked = glowTrailClockwise,
+                    onCheckedChange = { glowTrailClockwise = it })
+
+                SliderControl(
+                    "Trail Length: ${glowTrailLength.roundToInt()}",
+                    glowTrailLength,
+                    10f,
+                    360f
+                ) { glowTrailLength = it }
+
+                SliderControl(
+                    "Trail Width: ${glowTrailWidth.roundToInt()}",
+                    glowTrailWidth,
+                    2f,
+                    30f
+                ) { glowTrailWidth = it }
+
+                SliderControl(
+                    "Trail Duration: ${glowTrailDuration.roundToInt()}",
+                    glowTrailDuration,
+                    500f,
+                    6000f
+                ) { glowTrailDuration = it }
+
+                SliderControl(
+                    "Trail Duration: ${glowTrailDuration.toInt()}ms",
+                    glowTrailDuration,
+                    500f,
+                    6000f
+                ) { glowTrailDuration = it }
+
+                SliderControl(
+                    "Trail Alpha: ${"%.2f".format(glowTrailAlpha)}",
+                    glowTrailAlpha,
+                    0.1f,
+                    1f
+                ) { glowTrailAlpha = it }
             }
 
             Text("Blur Style:", style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 ShadowBlurStyle.entries.forEach { style ->
                     Button(
                         onClick = { shadowBlurStyle = style },
@@ -170,11 +301,15 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
                     }
                 }
             }
-            
+
             if (!isGradientMode) {
                 Text("Shadow Color:", style = MaterialTheme.typography.bodyMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    val adaptiveBlack = if (isInDarkMode) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.4f)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val adaptiveBlack =
+                        if (isInDarkMode) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.4f)
                     val commonColors = mapOf(
                         "Default" to adaptiveBlack,
                         "Red" to Color.Red.copy(alpha = 0.5f),
@@ -182,8 +317,11 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
                         "Green" to Color.Green.copy(alpha = 0.6f)
                     )
                     LaunchedEffect(isInDarkMode, defaultSolidColor) {
-                        if (shadowColor != defaultSolidColor && (shadowColor == Color.Black.copy(alpha = 0.4f) || shadowColor == Color.White.copy(alpha = 0.5f))) {
-                           shadowColor = defaultSolidColor
+                        if (shadowColor != defaultSolidColor && (shadowColor == Color.Black.copy(
+                                alpha = 0.4f
+                            ) || shadowColor == Color.White.copy(alpha = 0.5f))
+                        ) {
+                            shadowColor = defaultSolidColor
                         }
                     }
 
@@ -204,7 +342,13 @@ fun InteractiveDropShadowScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ControlRow(label: String, checkbox: Boolean = false, checked: Boolean = false, onCheckedChange: (Boolean) -> Unit = {}, content: @Composable () -> Unit = {}) {
+fun ControlRow(
+    label: String,
+    checkbox: Boolean = false,
+    checked: Boolean = false,
+    onCheckedChange: (Boolean) -> Unit = {},
+    content: @Composable () -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -220,7 +364,13 @@ fun ControlRow(label: String, checkbox: Boolean = false, checked: Boolean = fals
 }
 
 @Composable
-fun SliderControl(label: String, value: Float, rangeStart: Float, rangeEnd: Float, onValueChange: (Float) -> Unit) {
+fun SliderControl(
+    label: String,
+    value: Float,
+    rangeStart: Float,
+    rangeEnd: Float,
+    onValueChange: (Float) -> Unit
+) {
     Column {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Slider(value = value, onValueChange = onValueChange, valueRange = rangeStart..rangeEnd)
@@ -228,7 +378,11 @@ fun SliderControl(label: String, value: Float, rangeStart: Float, rangeEnd: Floa
 }
 
 @Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, name = "Dark Mode", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    showBackground = true,
+    name = "Dark Mode",
+    uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun InteractiveDropShadowScreenPreview() {
     GlowSampleTheme {
